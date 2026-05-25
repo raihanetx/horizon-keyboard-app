@@ -70,11 +70,13 @@ jobs:
           retention-days: 7
 
   release:
-    name: Build Release
+    name: Build & Publish Release
     runs-on: ubuntu-latest
     timeout-minutes: 30
     needs: [ build, lint ]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout code
@@ -93,7 +95,37 @@ jobs:
       - name: Build Release APK
         run: ./gradlew assembleRelease
 
-      - name: Upload Release APK
+      - name: Get version name
+        id: version
+        run: echo "version=v1.0.$(date +%Y%m%d%H%M%S)" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.version }}
+          name: Horizon Keyboard ${{ steps.version.outputs.version }}
+          body: |
+            ## Horizon Keyboard Release
+            
+            ### What's New
+            - Production-ready Jetpack Compose virtual keyboard
+            - QWERTY layout with dark/light theme support
+            - Material 3 design system
+            
+            ### Downloads
+            - **Release APK**: Download `app-release.apk` below
+            - **Debug APK**: Available in Artifacts
+            
+            ### Installation
+            1. Download `app-release.apk`
+            2. Enable "Install from unknown sources" on your Android device
+            3. Open the APK to install
+          files: |
+            app/build/outputs/apk/release/*.apk
+          draft: false
+          prerelease: false
+
+      - name: Upload Release APK to Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: release-apk
