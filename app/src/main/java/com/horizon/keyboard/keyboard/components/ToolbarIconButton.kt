@@ -9,23 +9,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 
-/**
- * Toolbar icon button used in the top utility row.
- *
- * @param icon Material icon to display.
- * @param contentDescription Accessibility description.
- * @param tint Icon tint color.
- * @param modifier Modifier for the button container.
- */
 @Composable
 internal fun ToolbarIconButton(
     icon: ImageVector,
     contentDescription: String,
     tint: Color,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     IconButton(
-        onClick = { /* Handle toolbar callback */ },
+        onClick = onClick,
         modifier = modifier.size(36.dp)
     ) {
         Icon(

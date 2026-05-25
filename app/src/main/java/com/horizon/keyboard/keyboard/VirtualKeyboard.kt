@@ -1,6 +1,7 @@
 package com.horizon.keyboard.keyboard
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,6 +23,7 @@ import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -29,24 +31,46 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.sp
 import com.horizon.keyboard.keyboard.components.KeyboardKey
 import com.horizon.keyboard.keyboard.components.KeyboardSpecialKey
 import com.horizon.keyboard.keyboard.components.ToolbarIconButton
 import com.horizon.keyboard.keyboard.model.KeyboardColors
+import com.horizon.keyboard.keyboard.model.KeyboardLayout
+import com.horizon.keyboard.keyboard.model.KeyboardLayouts
 
 @Composable
 fun VirtualKeyboard(
     modifier: Modifier = Modifier,
+    currentLayout: KeyboardLayout = KeyboardLayouts.QWERTY,
     onKeyPress: (String) -> Unit,
     onBackspace: () -> Unit,
     onSpace: () -> Unit,
-    onEnter: () -> Unit
+    onEnter: () -> Unit,
+    onSwipeRightToLeft: () -> Unit = {},
+    onLayoutSwitch: () -> Unit = {},
+    onShowNumbers: () -> Unit = {},
+    onShowEmojis: () -> Unit = {},
+    onVoiceTyping: () -> Unit = {},
+    onShowClipboard: () -> Unit = {},
+    onShowTranslate: () -> Unit = {},
+    onOpenSettings: () -> Unit = {}
 ) {
     var isShift by remember { mutableStateOf(false) }
+    var isSymbols by remember { mutableStateOf(false) }
+
+    val activeLayout = when {
+        isSymbols -> KeyboardLayouts.SYMBOLS
+        else -> currentLayout
+    }
+
+    var swipeAccumulator by remember { mutableStateOf(0f) }
+    val layoutDirection = if (currentLayout.isRtl) LayoutDirection.Rtl else LayoutDirection.Ltr
 
     Box(
         modifier = modifier
@@ -54,11 +78,27 @@ fun VirtualKeyboard(
             .background(KeyboardColors.PanelBg)
             .padding(horizontal = 6.dp)
             .padding(top = 6.dp, bottom = 32.dp)
+            .pointerInput(Unit) {
+                detectDragGestures(
+                    onDragEnd = {
+                        if (swipeAccumulator < -80f) {
+                            onSwipeRightToLeft()
+                        }
+                        swipeAccumulator = 0f
+                    },
+                    onDragCancel = { swipeAccumulator = 0f },
+                    onDrag = { change, dragAmount ->
+                        change.consume()
+                        swipeAccumulator += dragAmount.x
+                    }
+                )
+            }
     ) {
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
+        CompositionLocalProvider(LocalLayoutDirection provides layoutDirection) {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -66,12 +106,42 @@ fun VirtualKeyboard(
                 horizontalArrangement = Arrangement.SpaceAround,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                ToolbarIconButton(icon = Icons.Default.Keyboard, contentDescription = "Keyboard Layout", tint = KeyboardColors.IconColor)
-                ToolbarIconButton(icon = Icons.Default.EmojiEmotions, contentDescription = "Emojis", tint = KeyboardColors.IconColor)
-                ToolbarIconButton(icon = Icons.Default.Mic, contentDescription = "Voice Typing", tint = KeyboardColors.IconColor)
-                ToolbarIconButton(icon = Icons.Default.ContentPaste, contentDescription = "Clipboard", tint = KeyboardColors.IconColor)
-                ToolbarIconButton(icon = Icons.Default.Translate, contentDescription = "Translate", tint = KeyboardColors.IconColor)
-                ToolbarIconButton(icon = Icons.Default.Settings, contentDescription = "Settings", tint = KeyboardColors.IconColor)
+                ToolbarIconButton(
+                    icon = Icons.Default.Keyboard,
+                    contentDescription = "Switch Layout",
+                    tint = KeyboardColors.IconColor,
+                    onClick = onLayoutSwitch
+                )
+                ToolbarIconButton(
+                    icon = Icons.Default.EmojiEmotions,
+                    contentDescription = "Emojis",
+                    tint = KeyboardColors.IconColor,
+                    onClick = onShowEmojis
+                )
+                ToolbarIconButton(
+                    icon = Icons.Default.Mic,
+                    contentDescription = "Voice Typing",
+                    tint = KeyboardColors.IconColor,
+                    onClick = onVoiceTyping
+                )
+                ToolbarIconButton(
+                    icon = Icons.Default.ContentPaste,
+                    contentDescription = "Clipboard",
+                    tint = KeyboardColors.IconColor,
+                    onClick = onShowClipboard
+                )
+                ToolbarIconButton(
+                    icon = Icons.Default.Translate,
+                    contentDescription = "Translate",
+                    tint = KeyboardColors.IconColor,
+                    onClick = onShowTranslate
+                )
+                ToolbarIconButton(
+                    icon = Icons.Default.Settings,
+                    contentDescription = "Settings",
+                    tint = KeyboardColors.IconColor,
+                    onClick = onOpenSettings
+                )
             }
 
             Box(
@@ -81,93 +151,98 @@ fun VirtualKeyboard(
                     .background(KeyboardColors.BorderColor)
             )
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                val row1 = listOf("q", "w", "e", "r", "t", "y", "u", "i", "o", "p")
-                row1.forEach { char ->
-                    val displayChar = if (isShift) char.uppercase() else char
-                    KeyboardKey(
-                        text = displayChar,
-                        modifier = Modifier.weight(1f),
-                        onClick = {
-                            onKeyPress(displayChar)
-                            if (isShift) isShift = false
-                        }
-                    )
-                }
-            }
+            activeLayout.rows.forEachIndexed { rowIndex, row ->
+                val isLastRow = rowIndex == activeLayout.rows.lastIndex
+                val horizontalPadding = if (rowIndex == 1 && activeLayout.hasCharacters) 10.dp else 0.dp
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 10.dp),
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                val row2 = listOf("a", "s", "d", "f", "g", "h", "j", "k", "l")
-                row2.forEach { char ->
-                    val displayChar = if (isShift) char.uppercase() else char
-                    KeyboardKey(
-                        text = displayChar,
-                        modifier = Modifier.weight(1f),
-                        onClick = {
-                            onKeyPress(displayChar)
-                            if (isShift) isShift = false
-                        }
-                    )
-                }
-            }
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                val shiftBgTop = if (isShift) KeyboardColors.ShiftActiveTop else KeyboardColors.SpecialKeyGradientTop
-                val shiftBgBottom = if (isShift) KeyboardColors.ShiftActiveBottom else KeyboardColors.SpecialKeyGradientBottom
-                val shiftShadow = if (isShift) KeyboardColors.ShiftActiveShadow else KeyboardColors.KeyShadow
-
-                KeyboardSpecialKey(
-                    modifier = Modifier.weight(1.3f),
-                    bgTopColor = shiftBgTop,
-                    bgBottomColor = shiftBgBottom,
-                    shadowColor = shiftShadow,
-                    onClick = { isShift = !isShift }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = horizontalPadding),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowUpward,
-                        contentDescription = "Shift",
-                        tint = Color.White,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-
-                val row3 = listOf("z", "x", "c", "v", "b", "n", "m")
-                row3.forEach { char ->
-                    val displayChar = if (isShift) char.uppercase() else char
-                    KeyboardKey(
-                        text = displayChar,
-                        modifier = Modifier.weight(1f),
-                        onClick = {
-                            onKeyPress(displayChar)
-                            if (isShift) isShift = false
+                    if (isLastRow && activeLayout.hasCharacters) {
+                        KeyboardSpecialKey(
+                            modifier = Modifier.weight(1.3f),
+                            bgColor = if (isShift) {
+                                KeyboardColors.ShiftActiveBg
+                            } else {
+                                KeyboardColors.SpecialKeyBg
+                            },
+                            onClick = { isShift = !isShift }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.ArrowUpward,
+                                contentDescription = "Shift",
+                                tint = Color.White,
+                                modifier = Modifier.size(20.dp)
+                            )
                         }
-                    )
-                }
+                    }
 
-                KeyboardSpecialKey(
-                    modifier = Modifier.weight(1.3f),
-                    bgTopColor = KeyboardColors.SpecialKeyGradientTop,
-                    bgBottomColor = KeyboardColors.SpecialKeyGradientBottom,
-                    shadowColor = KeyboardColors.KeyShadow,
-                    onClick = onBackspace
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.Backspace,
-                        contentDescription = "Backspace",
-                        tint = Color.White,
-                        modifier = Modifier.size(20.dp)
-                    )
+                    if (isLastRow && !activeLayout.hasCharacters) {
+                        KeyboardSpecialKey(
+                            modifier = Modifier.weight(1.5f),
+                            bgColor = KeyboardColors.SpecialKeyBg,
+                            onClick = {
+                                isSymbols = false
+                                isShift = false
+                            }
+                        ) {
+                            Text(
+                                text = "ABC",
+                                color = KeyboardColors.SpecialTextColor,
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                    }
+
+                    row.forEach { char ->
+                        val displayChar = if (isShift && activeLayout.hasCharacters) {
+                            char.uppercase()
+                        } else {
+                            char
+                        }
+                        KeyboardKey(
+                            text = displayChar,
+                            modifier = Modifier.weight(1f),
+                            onClick = {
+                                onKeyPress(displayChar)
+                                if (isShift && activeLayout.hasCharacters) isShift = false
+                            }
+                        )
+                    }
+
+                    if (isLastRow && activeLayout.hasCharacters) {
+                        KeyboardSpecialKey(
+                            modifier = Modifier.weight(1.3f),
+                            bgColor = KeyboardColors.SpecialKeyBg,
+                            onClick = { onBackspace() }
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.Backspace,
+                                contentDescription = "Backspace",
+                                tint = Color.White,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    }
+
+                    if (isLastRow && !activeLayout.hasCharacters) {
+                        KeyboardSpecialKey(
+                            modifier = Modifier.weight(1.5f),
+                            bgColor = KeyboardColors.SpecialKeyBg,
+                            onClick = { onBackspace() }
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.Backspace,
+                                contentDescription = "Backspace",
+                                tint = Color.White,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    }
                 }
             }
 
@@ -177,10 +252,8 @@ fun VirtualKeyboard(
             ) {
                 KeyboardSpecialKey(
                     modifier = Modifier.weight(1.5f),
-                    bgTopColor = KeyboardColors.SpecialKeyGradientTop,
-                    bgBottomColor = KeyboardColors.SpecialKeyGradientBottom,
-                    shadowColor = KeyboardColors.KeyShadow,
-                    onClick = { /* Handle number keyboard toggle */ }
+                    bgColor = KeyboardColors.SpecialKeyBg,
+                    onClick = { onShowNumbers() }
                 ) {
                     Text(
                         text = "123",
@@ -199,7 +272,7 @@ fun VirtualKeyboard(
                 KeyboardKey(
                     text = "space",
                     modifier = Modifier.weight(4.5f),
-                    onClick = onSpace
+                    onClick = { onSpace() }
                 )
 
                 KeyboardKey(
@@ -210,10 +283,8 @@ fun VirtualKeyboard(
 
                 KeyboardSpecialKey(
                     modifier = Modifier.weight(1.5f),
-                    bgTopColor = KeyboardColors.SpecialKeyGradientTop,
-                    bgBottomColor = KeyboardColors.SpecialKeyGradientBottom,
-                    shadowColor = KeyboardColors.KeyShadow,
-                    onClick = onEnter
+                    bgColor = KeyboardColors.SpecialKeyBg,
+                    onClick = { onEnter() }
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.KeyboardReturn,
@@ -224,6 +295,7 @@ fun VirtualKeyboard(
                 }
             }
         }
+    }
     }
 }
 
