@@ -44,6 +44,8 @@ import com.horizon.keyboard.keyboard.components.ToolbarIconButton
 import com.horizon.keyboard.keyboard.model.KeyboardColors
 import com.horizon.keyboard.keyboard.model.KeyboardLayout
 import com.horizon.keyboard.keyboard.model.KeyboardLayouts
+import com.horizon.keyboard.keyboard.clipboard.ClipboardItem
+import com.horizon.keyboard.keyboard.clipboard.ClipboardPanel
 import com.horizon.keyboard.keyboard.voice.VoiceTypingPanel
 import com.horizon.keyboard.suggestion.Suggestion
 import com.horizon.keyboard.suggestion.SuggestionBar
@@ -70,7 +72,15 @@ fun VirtualKeyboard(
     var isShift by remember { mutableStateOf(false) }
     var isSymbols by remember { mutableStateOf(false) }
     var isVoiceMode by remember { mutableStateOf(false) }
+    var isClipboardMode by remember { mutableStateOf(false) }
     var voiceLanguage by remember { mutableStateOf("English") }
+    var clipboardItems by remember { mutableStateOf(
+        listOf(
+            ClipboardItem(id = 1, text = "Hello, how are you?", isPinned = true),
+            ClipboardItem(id = 2, text = "Meeting at 3pm"),
+            ClipboardItem(id = 3, text = "hello@example.com")
+        )
+    ) }
 
     val activeLayout = when {
         isSymbols -> KeyboardLayouts.SYMBOLS
@@ -116,6 +126,23 @@ fun VirtualKeyboard(
                     },
                     onStop = { isVoiceMode = false }
                 )
+            } else if (isClipboardMode) {
+                ClipboardPanel(
+                    items = clipboardItems,
+                    onItemTap = { item ->
+                        onKeyPress(item.text)
+                        isClipboardMode = false
+                    },
+                    onItemDelete = { item ->
+                        clipboardItems = clipboardItems.filter { it.id != item.id }
+                    },
+                    onItemPin = { item ->
+                        clipboardItems = clipboardItems.map {
+                            if (it.id == item.id) it.copy(isPinned = !it.isPinned) else it
+                        }
+                    },
+                    onClose = { isClipboardMode = false }
+                )
             } else {
                 Row(
                     modifier = Modifier
@@ -140,13 +167,19 @@ fun VirtualKeyboard(
                         icon = Icons.Default.Mic,
                         contentDescription = "Voice Typing",
                         tint = KeyboardColors.IconColor,
-                        onClick = { isVoiceMode = true }
+                        onClick = {
+                            isClipboardMode = false
+                            isVoiceMode = true
+                        }
                     )
                     ToolbarIconButton(
                         icon = Icons.Default.ContentPaste,
                         contentDescription = "Clipboard",
                         tint = KeyboardColors.IconColor,
-                        onClick = onShowClipboard
+                        onClick = {
+                            isVoiceMode = false
+                            isClipboardMode = true
+                        }
                     )
                     ToolbarIconButton(
                         icon = Icons.Default.Translate,
@@ -163,7 +196,7 @@ fun VirtualKeyboard(
                 }
             }
 
-            if (!isVoiceMode) {
+            if (!isVoiceMode && !isClipboardMode) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()

@@ -48,9 +48,14 @@ class HorizonKeyboardService : InputMethodService() {
     private fun KeyboardIME(modifier: Modifier = Modifier) {
         var currentLayoutState by remember { mutableStateOf(KeyboardLayouts.QWERTY) }
         var currentWord by remember { mutableStateOf("") }
+        var lastWord by remember { mutableStateOf("") }
 
         val suggestions = remember(currentWord) {
-            SuggestionEngine.getSuggestions(currentWord)
+            if (currentWord.isEmpty()) {
+                SuggestionEngine.getNextWordPredictions(lastWord)
+            } else {
+                SuggestionEngine.getSuggestions(currentWord)
+            }
         }
 
         VirtualKeyboard(
@@ -69,10 +74,12 @@ class HorizonKeyboardService : InputMethodService() {
             },
             onSpace = {
                 currentInput?.commitText(" ", 1)
+                lastWord = currentWord
                 currentWord = ""
             },
             onEnter = {
                 currentInput?.commitText("\n", 1)
+                lastWord = currentWord
                 currentWord = ""
             },
             onSwipeRightToLeft = {
@@ -85,6 +92,7 @@ class HorizonKeyboardService : InputMethodService() {
                     currentInput?.deleteSurroundingText(deleteCount, 0)
                 }
                 currentInput?.commitText("$word ", 1)
+                lastWord = word
                 currentWord = ""
             },
             onLayoutSwitch = {
