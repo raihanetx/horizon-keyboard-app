@@ -2,23 +2,18 @@ package com.horizon.keyboard.keyboard.model
 
 import androidx.compose.ui.graphics.Color
 
-/**
- * Color palette mapped from Tailwind CSS classes for consistent theming.
- */
 internal object KeyboardColors {
-    val PanelLight = Color(0xFFE5E7EB)          // bg-gray-200
-    val PanelDark = Color(0xFF1F2937)           // bg-gray-800
-    val BorderLight = Color(0xFFD1D5DB)         // border-gray-300
-    val BorderDark = Color(0xFF374151)          // border-gray-700
-    val KeyLight = Color(0xFFF8FAFC)            // bg-slate-50
-    val KeyDark = Color(0xFF374151)             // bg-gray-700
-    val KeyShadowLight = Color(0xFFD1D5DB)      // border-gray-300 shadow base
-    val KeyShadowDark = Color(0xFF111827)       // dark base shadow
-    val SpecialKeyLight = Color(0xFFE2E8F0)     // bg-slate-200/80
-    val SpecialKeyDark = Color(0xFF1F2937)      // bg-gray-800
-    val BlueActiveLight = Color(0xFF3B82F6)     // bg-blue-500
-    val BlueActiveDark = Color(0xFF2563EB)      // bg-blue-600
-    val BlueActiveShadow = Color(0xFF1D4ED8)
-    val IconMutedLight = Color(0xFF6B7280)      // text-gray-500
-    val IconMutedDark = Color(0xFF9CA3AF)       // text-gray-400
+    val PanelBg = Color(0xFF1A1A2E)
+    val BorderColor = Color(0xFF2A2A3E)
+    val KeyGradientTop = Color(0xFF3D3D5C)
+    val KeyGradientBottom = Color(0xFF2A2A40)
+    val KeyShadow = Color(0xFF0D0D1A)
+    val SpecialKeyGradientTop = Color(0xFF2D2D48)
+    val SpecialKeyGradientBottom = Color(0xFF1E1E32)
+    val ShiftActiveTop = Color(0xFF3B82F6)
+    val ShiftActiveBottom = Color(0xFF1D4ED8)
+    val ShiftActiveShadow = Color(0xFF0F3A8F)
+    val IconColor = Color(0xFF94A3B8)
+    val TextColor = Color(0xFFF1F5F9)
+    val SpecialTextColor = Color(0xFFCBD5E1)
 }
