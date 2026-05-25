@@ -38,13 +38,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.unit.sp
 import com.horizon.keyboard.keyboard.components.KeyboardKey
 import com.horizon.keyboard.keyboard.components.KeyboardSpecialKey
 import com.horizon.keyboard.keyboard.components.ToolbarIconButton
 import com.horizon.keyboard.keyboard.model.KeyboardColors
 import com.horizon.keyboard.keyboard.model.KeyboardLayout
 import com.horizon.keyboard.keyboard.model.KeyboardLayouts
+import com.horizon.keyboard.keyboard.voice.VoiceTypingPanel
 import com.horizon.keyboard.suggestion.Suggestion
 import com.horizon.keyboard.suggestion.SuggestionBar
 
@@ -69,6 +69,8 @@ fun VirtualKeyboard(
 ) {
     var isShift by remember { mutableStateOf(false) }
     var isSymbols by remember { mutableStateOf(false) }
+    var isVoiceMode by remember { mutableStateOf(false) }
+    var voiceLanguage by remember { mutableStateOf("English") }
 
     val activeLayout = when {
         isSymbols -> KeyboardLayouts.SYMBOLS
@@ -105,62 +107,75 @@ fun VirtualKeyboard(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 4.dp),
-                horizontalArrangement = Arrangement.SpaceAround,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                ToolbarIconButton(
-                    icon = Icons.Default.Keyboard,
-                    contentDescription = "Switch Layout",
-                    tint = KeyboardColors.IconColor,
-                    onClick = onLayoutSwitch
+            if (isVoiceMode) {
+                VoiceTypingPanel(
+                    isListening = true,
+                    language = voiceLanguage,
+                    onLanguageToggle = {
+                        voiceLanguage = if (voiceLanguage == "English") "বাংলা" else "English"
+                    },
+                    onStop = { isVoiceMode = false }
                 )
-                ToolbarIconButton(
-                    icon = Icons.Default.EmojiEmotions,
-                    contentDescription = "Emojis",
-                    tint = KeyboardColors.IconColor,
-                    onClick = onShowEmojis
-                )
-                ToolbarIconButton(
-                    icon = Icons.Default.Mic,
-                    contentDescription = "Voice Typing",
-                    tint = KeyboardColors.IconColor,
-                    onClick = onVoiceTyping
-                )
-                ToolbarIconButton(
-                    icon = Icons.Default.ContentPaste,
-                    contentDescription = "Clipboard",
-                    tint = KeyboardColors.IconColor,
-                    onClick = onShowClipboard
-                )
-                ToolbarIconButton(
-                    icon = Icons.Default.Translate,
-                    contentDescription = "Translate",
-                    tint = KeyboardColors.IconColor,
-                    onClick = onShowTranslate
-                )
-                ToolbarIconButton(
-                    icon = Icons.Default.Settings,
-                    contentDescription = "Settings",
-                    tint = KeyboardColors.IconColor,
-                    onClick = onOpenSettings
-                )
+            } else {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 4.dp),
+                    horizontalArrangement = Arrangement.SpaceAround,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    ToolbarIconButton(
+                        icon = Icons.Default.Keyboard,
+                        contentDescription = "Switch Layout",
+                        tint = KeyboardColors.IconColor,
+                        onClick = onLayoutSwitch
+                    )
+                    ToolbarIconButton(
+                        icon = Icons.Default.EmojiEmotions,
+                        contentDescription = "Emojis",
+                        tint = KeyboardColors.IconColor,
+                        onClick = onShowEmojis
+)
+                    ToolbarIconButton(
+                        icon = Icons.Default.Mic,
+                        contentDescription = "Voice Typing",
+                        tint = KeyboardColors.IconColor,
+                        onClick = { isVoiceMode = true }
+                    )
+                    ToolbarIconButton(
+                        icon = Icons.Default.ContentPaste,
+                        contentDescription = "Clipboard",
+                        tint = KeyboardColors.IconColor,
+                        onClick = onShowClipboard
+                    )
+                    ToolbarIconButton(
+                        icon = Icons.Default.Translate,
+                        contentDescription = "Translate",
+                        tint = KeyboardColors.IconColor,
+                        onClick = onShowTranslate
+                    )
+                    ToolbarIconButton(
+                        icon = Icons.Default.Settings,
+                        contentDescription = "Settings",
+                        tint = KeyboardColors.IconColor,
+                        onClick = onOpenSettings
+                    )
+                }
             }
 
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(1.dp)
-                    .background(KeyboardColors.BorderColor)
-            )
+            if (!isVoiceMode) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(1.dp)
+                        .background(KeyboardColors.BorderColor)
+                )
 
-            SuggestionBar(
-                suggestions = suggestions,
-                onSuggestionTap = onSuggestionTap
-            )
+                SuggestionBar(
+                    suggestions = suggestions,
+                    onSuggestionTap = onSuggestionTap
+                )
+            }
 
             activeLayout.rows.forEachIndexed { rowIndex, row ->
                 val isLastRow = rowIndex == activeLayout.rows.lastIndex
