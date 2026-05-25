@@ -25,7 +25,7 @@ internal fun KeyboardSpecialKey(
 ) {
     Box(
         modifier = modifier
-            .height(44.dp)
+            .height(40.dp)
             .clip(RoundedCornerShape(6.dp))
             .background(bgColor)
             .clickable(
