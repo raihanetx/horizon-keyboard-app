@@ -15,6 +15,8 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import com.horizon.keyboard.keyboard.VirtualKeyboard
 import com.horizon.keyboard.keyboard.model.KeyboardLayouts
+import com.horizon.keyboard.suggestion.Suggestion
+import com.horizon.keyboard.suggestion.SuggestionEngine
 import com.horizon.keyboard.theme.HorizonKeyboardTheme
 
 class HorizonKeyboardService : InputMethodService() {
@@ -45,24 +47,45 @@ class HorizonKeyboardService : InputMethodService() {
     @Composable
     private fun KeyboardIME(modifier: Modifier = Modifier) {
         var currentLayoutState by remember { mutableStateOf(KeyboardLayouts.QWERTY) }
+        var currentWord by remember { mutableStateOf("") }
+
+        val suggestions = remember(currentWord) {
+            SuggestionEngine.getSuggestions(currentWord)
+        }
 
         VirtualKeyboard(
             modifier = modifier,
             currentLayout = currentLayoutState,
+            suggestions = suggestions,
             onKeyPress = { text ->
                 currentInput?.commitText(text, 1)
+                currentWord += text
             },
             onBackspace = {
                 currentInput?.deleteSurroundingText(1, 0)
+                if (currentWord.isNotEmpty()) {
+                    currentWord = currentWord.dropLast(1)
+                }
             },
             onSpace = {
                 currentInput?.commitText(" ", 1)
+                currentWord = ""
             },
             onEnter = {
                 currentInput?.commitText("\n", 1)
+                currentWord = ""
             },
             onSwipeRightToLeft = {
                 currentInput?.deleteSurroundingText(5, 0)
+                currentWord = ""
+            },
+            onSuggestionTap = { word ->
+                val deleteCount = currentWord.length
+                if (deleteCount > 0) {
+                    currentInput?.deleteSurroundingText(deleteCount, 0)
+                }
+                currentInput?.commitText("$word ", 1)
+                currentWord = ""
             },
             onLayoutSwitch = {
                 val layouts = KeyboardLayouts.characterLayouts

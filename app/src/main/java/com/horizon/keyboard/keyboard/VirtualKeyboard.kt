@@ -45,16 +45,20 @@ import com.horizon.keyboard.keyboard.components.ToolbarIconButton
 import com.horizon.keyboard.keyboard.model.KeyboardColors
 import com.horizon.keyboard.keyboard.model.KeyboardLayout
 import com.horizon.keyboard.keyboard.model.KeyboardLayouts
+import com.horizon.keyboard.suggestion.Suggestion
+import com.horizon.keyboard.suggestion.SuggestionBar
 
 @Composable
 fun VirtualKeyboard(
     modifier: Modifier = Modifier,
     currentLayout: KeyboardLayout = KeyboardLayouts.QWERTY,
+    suggestions: List<Suggestion> = emptyList(),
     onKeyPress: (String) -> Unit,
     onBackspace: () -> Unit,
     onSpace: () -> Unit,
     onEnter: () -> Unit,
     onSwipeRightToLeft: () -> Unit = {},
+    onSuggestionTap: (String) -> Unit = {},
     onLayoutSwitch: () -> Unit = {},
     onShowNumbers: () -> Unit = {},
     onShowEmojis: () -> Unit = {},
@@ -151,6 +155,11 @@ fun VirtualKeyboard(
                     .fillMaxWidth()
                     .height(1.dp)
                     .background(KeyboardColors.BorderColor)
+            )
+
+            SuggestionBar(
+                suggestions = suggestions,
+                onSuggestionTap = onSuggestionTap
             )
 
             activeLayout.rows.forEachIndexed { rowIndex, row ->
