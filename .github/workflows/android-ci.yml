@@ -92,8 +92,19 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
+      - name: Generate debug keystore for signing
+        run: |
+          keytool -genkey -v -keystore debug.keystore -alias android \
+            -storepass android -keypass android -keyalg RSA -keysize 2048 \
+            -validity 10000 -dname "CN=HorizonKeyboard, OU=Development, O=HorizonKeyboard, L=Unknown, ST=Unknown, C=US"
+
       - name: Build Release APK
         run: ./gradlew assembleRelease
+        env:
+          KEYSTORE_PATH: ${{ github.workspace }}/debug.keystore
+          KEYSTORE_PASSWORD: android
+          KEY_ALIAS: android
+          KEY_PASSWORD: android
 
       - name: Get version name
         id: version
