@@ -47,14 +47,14 @@ import com.horizon.keyboard.keyboard.model.KeyboardLayouts
 import com.horizon.keyboard.keyboard.clipboard.ClipboardItem
 import com.horizon.keyboard.keyboard.clipboard.ClipboardPanel
 import com.horizon.keyboard.keyboard.voice.VoiceTypingPanel
-import com.horizon.keyboard.suggestion.Suggestion
 import com.horizon.keyboard.suggestion.SuggestionBar
+import com.horizon.keyboard.suggestion.SuggestionEngine
 
 @Composable
 fun VirtualKeyboard(
     modifier: Modifier = Modifier,
     currentLayout: KeyboardLayout = KeyboardLayouts.QWERTY,
-    suggestions: List<Suggestion> = emptyList(),
+    typedPrefix: String = "",
     onKeyPress: (String) -> Unit,
     onBackspace: () -> Unit,
     onSpace: () -> Unit,
@@ -205,7 +205,7 @@ fun VirtualKeyboard(
                 )
 
                 SuggestionBar(
-                    suggestions = suggestions,
+                    suggestions = SuggestionEngine.getSuggestions(typedPrefix),
                     onSuggestionTap = onSuggestionTap
                 )
             }

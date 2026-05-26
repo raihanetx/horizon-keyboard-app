@@ -15,7 +15,6 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import com.horizon.keyboard.keyboard.VirtualKeyboard
 import com.horizon.keyboard.keyboard.model.KeyboardLayouts
-import com.horizon.keyboard.suggestion.SuggestionEngine
 import com.horizon.keyboard.theme.HorizonKeyboardTheme
 
 class HorizonKeyboardService : InputMethodService() {
@@ -48,16 +47,10 @@ class HorizonKeyboardService : InputMethodService() {
         var currentLayoutState by remember { mutableStateOf(KeyboardLayouts.QWERTY) }
         var currentWord by remember { mutableStateOf("") }
 
-        val suggestions = if (currentWord.length < 2) {
-            emptyList()
-        } else {
-            SuggestionEngine.getSuggestions(currentWord)
-        }
-
         VirtualKeyboard(
             modifier = modifier,
             currentLayout = currentLayoutState,
-            suggestions = suggestions,
+            typedPrefix = currentWord,
             onKeyPress = { text ->
                 currentInput?.commitText(text, 1)
                 currentWord += text
