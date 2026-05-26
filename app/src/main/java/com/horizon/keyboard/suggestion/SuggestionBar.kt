@@ -6,11 +6,9 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,7 +28,7 @@ internal fun SuggestionBar(
     onSuggestionTap: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    if (suggestions.isEmpty()) return
+    val showPlaceholder = suggestions.isEmpty()
 
     Row(
         modifier = modifier
@@ -42,34 +40,36 @@ internal fun SuggestionBar(
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        suggestions.forEachIndexed { index, suggestion ->
-            if (index > 0) {
+        if (showPlaceholder) {
+            Text(
+                text = "",
+                color = KeyboardColors.IconColor,
+                fontSize = 13.sp
+            )
+        } else {
+            suggestions.forEach { suggestion ->
                 Box(
                     modifier = Modifier
-                        .width(1.dp)
-                        .height(20.dp)
-                        .background(KeyboardColors.BorderColor)
-                )
-            }
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-                    .height(32.dp)
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null,
-                        onClick = { onSuggestionTap(suggestion.word) }
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = suggestion.displayText,
-                    color = KeyboardColors.TextColor,
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    textAlign = TextAlign.Center
-                )
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .height(32.dp)
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(KeyboardColors.KeyBg)
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null,
+                            onClick = { onSuggestionTap(suggestion.word) }
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = suggestion.displayText,
+                        color = KeyboardColors.TextColor,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center
+                    )
+                }
             }
         }
     }

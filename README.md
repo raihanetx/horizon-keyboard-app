@@ -1,4 +1,4 @@
-# Horizon Keyboard
+ # Horizon Keyboard
 
 A modern virtual keyboard application built with Kotlin and Jetpack Compose.
 
