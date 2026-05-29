@@ -28,6 +28,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import com.horizon.keyboard.keyboard.model.LocalKeyboardColors
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -69,21 +70,23 @@ internal fun KeyboardSpecialKey(
 
     val gestureModifier = if (repeatOnHold) {
         baseModifier.pointerInput(onClick) {
-            awaitEachGesture {
-                awaitFirstDown(requireUnconsumed = false)
-                isPressed = true
-                val repeatJob = launch {
-                    delay(500L)
-                    while (true) {
-                        onClick()
-                        delay(80L)
+            coroutineScope {
+                awaitEachGesture {
+                    awaitFirstDown(requireUnconsumed = false)
+                    isPressed = true
+                    val repeatJob = launch {
+                        delay(500L)
+                        while (true) {
+                            onClick()
+                            delay(80L)
+                        }
                     }
+                    do {
+                        val event = awaitPointerEvent()
+                    } while (event.changes.any { it.pressed })
+                    repeatJob.cancel()
+                    isPressed = false
                 }
-                do {
-                    val event = awaitPointerEvent()
-                } while (event.changes.any { it.pressed })
-                repeatJob.cancel()
-                isPressed = false
             }
         }
     } else {
