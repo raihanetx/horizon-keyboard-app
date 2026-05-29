@@ -6,11 +6,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
+import com.horizon.keyboard.keyboard.model.DarkKeyboardColors
+import com.horizon.keyboard.keyboard.model.LightKeyboardColors
+import com.horizon.keyboard.keyboard.model.LocalKeyboardColors
 
 private val LightColorScheme = lightColorScheme(
     primary = Color(0xFF3B82F6),
@@ -62,14 +66,20 @@ fun HorizonKeyboardTheme(
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
-            val window = (view.context as Activity).window
-            window.statusBarColor = colorScheme.background.toArgb()
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
+            val activity = view.context as? Activity
+            activity?.let { act ->
+                act.window.statusBarColor = colorScheme.background.toArgb()
+                WindowCompat.getInsetsController(act.window, view).isAppearanceLightStatusBars = !darkTheme
+            }
         }
     }
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        content = content
-    )
+    val keyboardColors = if (darkTheme) DarkKeyboardColors else LightKeyboardColors
+
+    CompositionLocalProvider(LocalKeyboardColors provides keyboardColors) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            content = content
+        )
+    }
 }

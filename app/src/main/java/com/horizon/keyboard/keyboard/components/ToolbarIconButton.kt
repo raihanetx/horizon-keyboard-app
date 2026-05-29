@@ -19,7 +19,7 @@ internal fun ToolbarIconButton(
 ) {
     IconButton(
         onClick = onClick,
-        modifier = modifier.size(36.dp)
+        modifier = modifier.size(40.dp)
     ) {
         Icon(
             imageVector = icon,

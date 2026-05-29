@@ -30,7 +30,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.horizon.keyboard.keyboard.model.KeyboardColors
+import com.horizon.keyboard.keyboard.model.LocalKeyboardColors
 
 data class ClipboardItem(
     val id: Long,
@@ -47,11 +47,12 @@ fun ClipboardPanel(
     onItemPin: (ClipboardItem) -> Unit,
     onClose: () -> Unit
 ) {
+    val colors = LocalKeyboardColors.current
     Column(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(8.dp))
-            .background(KeyboardColors.SpecialKeyBg)
+            .background(colors.specialKeyBg)
             .padding(2.dp)
     ) {
         Row(
@@ -63,14 +64,14 @@ fun ClipboardPanel(
         ) {
             Text(
                 text = "Clipboard",
-                color = KeyboardColors.TextColor,
+                color = colors.textColor,
                 fontSize = 13.sp,
                 fontWeight = FontWeight.SemiBold
             )
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(6.dp))
-                    .background(KeyboardColors.KeyBg)
+                    .background(colors.keyBg)
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null,
@@ -82,7 +83,7 @@ fun ClipboardPanel(
                 Icon(
                     imageVector = Icons.Default.Close,
                     contentDescription = "Close",
-                    tint = KeyboardColors.IconColor,
+                    tint = colors.iconColor,
                     modifier = Modifier.size(16.dp)
                 )
             }
@@ -97,7 +98,7 @@ fun ClipboardPanel(
             ) {
                 Text(
                     text = "No clipboard items",
-                    color = KeyboardColors.IconColor,
+                    color = colors.iconColor,
                     fontSize = 13.sp
                 )
             }
@@ -112,20 +113,20 @@ fun ClipboardPanel(
                             indication = null,
                             onClick = { onItemTap(item) }
                         )
-                        .background(KeyboardColors.KeyBg)
+                        .background(colors.keyBg)
                         .padding(horizontal = 8.dp, vertical = 6.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
                         imageVector = Icons.Default.ContentCopy,
                         contentDescription = "Copy",
-                        tint = KeyboardColors.IconColor,
+                        tint = colors.iconColor,
                         modifier = Modifier.size(14.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = item.text,
-                        color = KeyboardColors.TextColor,
+                        color = colors.textColor,
                         fontSize = 14.sp,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
@@ -136,7 +137,7 @@ fun ClipboardPanel(
                         Icon(
                             imageVector = Icons.Default.Pin,
                             contentDescription = "Pinned",
-                            tint = KeyboardColors.IconColor,
+                            tint = colors.iconColor,
                             modifier = Modifier.size(14.dp)
                         )
                     }
@@ -144,7 +145,7 @@ fun ClipboardPanel(
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(4.dp))
-                            .background(KeyboardColors.SpecialKeyBg)
+                            .background(colors.specialKeyBg)
                             .clickable(
                                 interactionSource = remember { MutableInteractionSource() },
                                 indication = null,
@@ -156,7 +157,7 @@ fun ClipboardPanel(
                         Icon(
                             imageVector = Icons.Default.Pin,
                             contentDescription = "Pin",
-                            tint = KeyboardColors.IconColor,
+                            tint = colors.iconColor,
                             modifier = Modifier.size(12.dp)
                         )
                     }
@@ -164,7 +165,7 @@ fun ClipboardPanel(
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(4.dp))
-                            .background(KeyboardColors.SpecialKeyBg)
+                            .background(colors.specialKeyBg)
                             .clickable(
                                 interactionSource = remember { MutableInteractionSource() },
                                 indication = null,
@@ -176,7 +177,7 @@ fun ClipboardPanel(
                         Icon(
                             imageVector = Icons.Default.Delete,
                             contentDescription = "Delete",
-                            tint = KeyboardColors.IconColor,
+                            tint = colors.iconColor,
                             modifier = Modifier.size(12.dp)
                         )
                     }

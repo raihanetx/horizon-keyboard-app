@@ -1,4 +1,4 @@
-package com.horizon.keyboard.suggestion
+package com.horizon.keyboard.keyboard.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -6,8 +6,8 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
@@ -16,59 +16,49 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.horizon.keyboard.keyboard.model.LocalKeyboardColors
 
 @Composable
-internal fun SuggestionBar(
-    suggestions: List<Suggestion>,
-    onSuggestionTap: (String) -> Unit,
-    modifier: Modifier = Modifier
+fun LongPressPopup(
+    alternates: List<String>,
+    onSelect: (String) -> Unit,
+    onDismiss: () -> Unit
 ) {
     val colors = LocalKeyboardColors.current
-    val showPlaceholder = suggestions.isEmpty()
-
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 2.dp, vertical = 4.dp)
-            .height(40.dp)
+    Box(
+        modifier = Modifier
+            .offset(y = (-52).dp)
+            .shadow(4.dp, RoundedCornerShape(8.dp))
             .clip(RoundedCornerShape(8.dp))
-            .background(colors.suggestionBg),
-        horizontalArrangement = Arrangement.SpaceEvenly,
-        verticalAlignment = Alignment.CenterVertically
+            .background(colors.keyBg)
+            .padding(horizontal = 4.dp, vertical = 4.dp)
     ) {
-        if (showPlaceholder) {
-            Text(
-                text = "",
-                color = colors.iconColor,
-                fontSize = 14.sp
-            )
-        } else {
-            suggestions.forEach { suggestion ->
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(2.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            alternates.forEach { alt ->
                 Box(
                     modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth()
-                        .height(36.dp)
-                        .clip(RoundedCornerShape(6.dp))
-                        .background(colors.keyBg)
+                        .height(40.dp)
+                        .clip(RoundedCornerShape(4.dp))
                         .clickable(
                             interactionSource = remember { MutableInteractionSource() },
                             indication = null,
-                            onClick = { onSuggestionTap(suggestion.word) }
-                        ),
+                            onClick = { onSelect(alt) }
+                        )
+                        .padding(horizontal = 10.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = suggestion.displayText,
+                        text = alt,
                         color = colors.textColor,
-                        fontSize = 17.sp,
-                        fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Center
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Medium
                     )
                 }
             }
